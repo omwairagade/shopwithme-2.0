@@ -119,3 +119,13 @@ Change these in production.
 ## License
 
 This project is for educational and portfolio purposes.
+
+## Known Dependency Notices
+
+npm audit reports some vulnerabilities in transitive dev dependencies (nodemon/chokidar/braces in backend; tailwindcss/vite/react-router in frontend). These require major breaking version upgrades to fully resolve and were intentionally left unpatched because:
+
+- Affected packages are dev-only build tooling (nodemon, vite dev server, tailwind file watcher) not exposed in production
+- react-router open-redirect advisory requires untrusted user input in navigation calls, which this app does not do
+- Forcing upgrades would require Tailwind v3 to v4, Vite v6 to v8, and react-router-dom v6 to v7 migrations, risking breaking a fully tested, working application
+
+Revisit if planning a major dependency upgrade pass in the future.

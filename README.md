@@ -1,5 +1,8 @@
 ﻿# ShopWithMe 2.0
 
+![CI](https://github.com/omwairagade/shopwithme-2.0/actions/workflows/ci.yml/badge.svg)
+
+
 A full-featured, professional MERN stack e-commerce application with JWT authentication, Stripe payments, and a complete admin dashboard.
 
 ## Features
@@ -129,3 +132,4 @@ npm audit reports some vulnerabilities in transitive dev dependencies (nodemon/c
 - Forcing upgrades would require Tailwind v3 to v4, Vite v6 to v8, and react-router-dom v6 to v7 migrations, risking breaking a fully tested, working application
 
 Revisit if planning a major dependency upgrade pass in the future.
+

@@ -1,17 +1,30 @@
 ﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ShoppingCart, User, LayoutDashboard, LogOut, Menu, X, Store } from 'lucide-react';
+import {
+  ShoppingCart,
+  User,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  X,
+  Store,
+  Heart,
+} from 'lucide-react';
 import { logout } from '../store/slices/authSlice';
 
 export default function Navbar() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const cartItems = useSelector((state) => state.cart.items);
+  const wishlistItems = useSelector((state) => state.wishlist.items);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const cartCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
+  const cartCount = cartItems.reduce(
+    (acc, item) => acc + item.qty,
+    0
+  );
+  const wishlistCount = wishlistItems.length;
 
   const handleLogout = () => {
     dispatch(logout());
@@ -19,38 +32,69 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const navLinkClass =
+    'text-gray-600 hover:text-primary font-medium transition';
+  const badgeClass =
+    'absolute -top-2 -right-3 bg-secondary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center';
+  const mobileLinkClass =
+    'flex items-center gap-2 text-gray-700 font-medium';
+
   return (
     <nav className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center gap-2 text-2xl font-extrabold text-primary">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-2xl font-extrabold text-primary"
+          >
             <Store size={26} strokeWidth={2.5} />
             ShopWithMe
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-600 hover:text-primary font-medium transition">
+            <Link to="/" className={navLinkClass}>
               Home
             </Link>
-            <Link to="/cart" className="relative flex items-center gap-1 text-gray-600 hover:text-primary font-medium transition">
+
+            {isAuthenticated && (
+              <Link
+                to="/wishlist"
+                className={`relative flex items-center gap-1 ${navLinkClass}`}
+              >
+                <Heart size={20} />
+                Wishlist
+                {wishlistCount > 0 && (
+                  <span className={badgeClass}>{wishlistCount}</span>
+                )}
+              </Link>
+            )}
+
+            <Link
+              to="/cart"
+              className={`relative flex items-center gap-1 ${navLinkClass}`}
+            >
               <ShoppingCart size={20} />
               Cart
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-3 bg-secondary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
+                <span className={badgeClass}>{cartCount}</span>
               )}
             </Link>
 
             {isAuthenticated ? (
               <>
                 {user?.role === 'admin' && (
-                  <Link to="/admin" className="flex items-center gap-1 text-gray-600 hover:text-primary font-medium transition">
+                  <Link
+                    to="/admin"
+                    className={`flex items-center gap-1 ${navLinkClass}`}
+                  >
                     <LayoutDashboard size={18} />
                     Admin
                   </Link>
                 )}
-                <Link to="/profile" className="flex items-center gap-1 text-gray-600 hover:text-primary font-medium transition">
+                <Link
+                  to="/profile"
+                  className={`flex items-center gap-1 ${navLinkClass}`}
+                >
                   <User size={18} />
                   Profile
                 </Link>
@@ -64,7 +108,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-gray-600 hover:text-primary font-medium transition">
+                <Link to="/login" className={navLinkClass}>
                   Login
                 </Link>
                 <Link
@@ -87,32 +131,71 @@ export default function Navbar() {
 
         {menuOpen && (
           <div className="md:hidden pb-4 flex flex-col space-y-3 border-t border-gray-100 pt-3">
-            <Link to="/" onClick={() => setMenuOpen(false)} className="text-gray-700 font-medium">
+            <Link
+              to="/"
+              onClick={() => setMenuOpen(false)}
+              className="text-gray-700 font-medium"
+            >
               Home
             </Link>
-            <Link to="/cart" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 text-gray-700 font-medium">
+
+            {isAuthenticated && (
+              <Link
+                to="/wishlist"
+                onClick={() => setMenuOpen(false)}
+                className={mobileLinkClass}
+              >
+                <Heart size={18} /> Wishlist ({wishlistCount})
+              </Link>
+            )}
+
+            <Link
+              to="/cart"
+              onClick={() => setMenuOpen(false)}
+              className={mobileLinkClass}
+            >
               <ShoppingCart size={18} /> Cart ({cartCount})
             </Link>
+
             {isAuthenticated ? (
               <>
                 {user?.role === 'admin' && (
-                  <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 text-gray-700 font-medium">
+                  <Link
+                    to="/admin"
+                    onClick={() => setMenuOpen(false)}
+                    className={mobileLinkClass}
+                  >
                     <LayoutDashboard size={18} /> Admin
                   </Link>
                 )}
-                <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 text-gray-700 font-medium">
+                <Link
+                  to="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className={mobileLinkClass}
+                >
                   <User size={18} /> Profile
                 </Link>
-                <button onClick={handleLogout} className="flex items-center gap-2 text-left text-red-600 font-medium">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-left text-red-600 font-medium"
+                >
                   <LogOut size={18} /> Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setMenuOpen(false)} className="text-gray-700 font-medium">
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-gray-700 font-medium"
+                >
                   Login
                 </Link>
-                <Link to="/register" onClick={() => setMenuOpen(false)} className="text-gray-700 font-medium">
+                <Link
+                  to="/register"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-gray-700 font-medium"
+                >
                   Register
                 </Link>
               </>
@@ -123,3 +206,4 @@ export default function Navbar() {
     </nav>
   );
 }
+

@@ -22,6 +22,7 @@ export default function AdminProductEdit() {
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -53,6 +54,34 @@ export default function AdminProductEdit() {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const { data } = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      setForm((prev) => {
+        const existing = prev.images ? prev.images.split(',').map((u) => u.trim()).filter(Boolean) : [];
+        const updated = [...existing, data.url];
+        return { ...prev, images: updated.join(', ') };
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Image upload failed');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -88,10 +117,16 @@ export default function AdminProductEdit() {
 
   if (loading) return <p className="text-gray-500">Loading...</p>;
 
+  const imageList = form.images ? form.images.split(',').map((u) => u.trim()).filter(Boolean) : [];
+
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{isNew ? 'Add Product' : 'Edit Product'}</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+        {isNew ? 'Add Product' : 'Edit Product'}
+      </h1>
+
       {error && <p className="text-red-500 mb-4">{error}</p>}
+
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -104,6 +139,7 @@ export default function AdminProductEdit() {
             className="w-full border border-gray-300 rounded-md px-4 py-2"
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea
@@ -115,6 +151,7 @@ export default function AdminProductEdit() {
             className="w-full border border-gray-300 rounded-md px-4 py-2"
           />
         </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
@@ -138,6 +175,7 @@ export default function AdminProductEdit() {
             />
           </div>
         </div>
+
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
@@ -177,6 +215,34 @@ export default function AdminProductEdit() {
             />
           </div>
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Upload Image
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={uploading}
+            className="w-full border border-gray-300 rounded-md px-4 py-2"
+          />
+          {uploading && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
+        </div>
+
+        {imageList.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {imageList.map((url, idx) => (
+              <img
+                key={idx}
+                src={url}
+                alt={`Preview ${idx}`}
+                className="w-20 h-20 object-cover rounded-md border border-gray-300"
+              />
+            ))}
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Image URLs (comma separated)
@@ -190,6 +256,7 @@ export default function AdminProductEdit() {
             className="w-full border border-gray-300 rounded-md px-4 py-2"
           />
         </div>
+
         <div className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -214,4 +281,3 @@ export default function AdminProductEdit() {
     </div>
   );
 }
-
